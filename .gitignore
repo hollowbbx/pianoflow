@@ -1,0 +1,8 @@
+# Copia de la versión anterior (tiene contenido que no es de dominio público)
+_original_antigravity/
+# Configuración local de Claude Code
+.claude/
+# Cosas de Windows / Python
+Thumbs.db
+desktop.ini
+__pycache__/

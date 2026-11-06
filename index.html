@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PianoFlow · Aprendé piano con tu teclado MIDI</title>
+  <meta name="theme-color" content="#100f0d" />
+  <meta name="description" content="Aprendé piano con tu teclado MIDI: lecciones guiadas, lectura de notas y práctica diaria." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PianoFlow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ======================== BARRA SUPERIOR ======================== -->
+  <header class="topbar">
+    <div class="brand"><img src="icons/icon-192.png" alt="" class="brand-mark" /><span>PianoFlow</span></div>
+
+    <button id="btnLibrary" class="song-button" title="Inicio: tu práctica de hoy y la ruta de lecciones">
+      <span class="song-button-kicker" id="songKicker">Lección</span>
+      <span class="song-button-title" id="songTitle">—</span>
+      <span class="song-button-stars" id="songStars"></span>
+      <span class="caret">▾</span>
+    </button>
+
+    <div class="spacer"></div>
+
+    <div id="dailyChip" class="daily-chip" title="Tu práctica de hoy y tu racha de días seguidos. Pocos minutos todos los días rinden más que mucho una vez por semana.">
+      <span id="streakText" class="streak" title="Días seguidos practicando">0 días</span>
+      <div class="daily-bar"><div id="dailyFill" class="daily-fill"></div></div>
+      <span id="dailyText" class="daily-text">0/10 min</span>
+    </div>
+
+    <button id="midiBadge" class="midi-badge" title="Estado de tu teclado USB. Clic para volver a buscarlo.">
+      <span class="midi-dot"></span>
+      <span id="midiText">Buscando teclado…</span>
+    </button>
+
+    <button id="btnInstall" class="btn btn-install hidden" title="Instalar PianoFlow como una app: ícono propio, ventana propia y funciona sin internet">Instalar app</button>
+    <button id="btnRecord" class="btn btn-record" title="Tocá libremente y se convierte en una canción para practicar"><i class="rec-dot"></i>Grabar</button>
+    <button id="btnSettings" class="btn btn-icon" title="Ajustes"><svg class="ico ico-only" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2.4"/><path d="M8 1.6v2M8 12.4v2M1.6 8h2M12.4 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"/></svg></button>
+  </header>
+
+  <!-- ======================== CONTROLES DE PRÁCTICA ======================== -->
+  <section class="practice-bar">
+    <button id="btnPlay" class="btn btn-play" title="Empezar / pausar (barra espaciadora)"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg>Empezar</button>
+    <button id="btnRestart" class="btn btn-icon" title="Volver a empezar (Enter)"><svg class="ico ico-only" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h1.8v10H3z M13 3v10L5.8 8z" fill="currentColor"/></svg></button>
+
+    <div class="group">
+      <span class="group-label">Modo</span>
+      <div class="seg" id="modeSeg">
+        <button data-mode="listen" title="La PC toca la canción: escuchala y mirá las manos antes de tocar">Escuchar</button>
+        <button data-mode="learn" title="Las notas se frenan y te esperan. Sin apuro: aprendé qué teclas van.">Aprender</button>
+        <button data-mode="rhythm" title="La canción sigue a tempo. Medimos si llegás a tiempo.">Con ritmo</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <span class="group-label">Manos</span>
+      <div class="seg" id="handSeg">
+        <button data-hand="L" title="Practicás la izquierda; la derecha la toca la PC"><i class="dot dot-l"></i>Izquierda</button>
+        <button data-hand="both" title="Las dos manos">Ambas</button>
+        <button data-hand="R" title="Practicás la derecha; la izquierda la toca la PC"><i class="dot dot-r"></i>Derecha</button>
+      </div>
+    </div>
+
+    <div class="group speed-group" title="Velocidad (flechas ↑ ↓). Empezá lento: la velocidad llega sola con la repetición.">
+      <span class="group-label">Velocidad</span>
+      <input type="range" id="speedRange" min="25" max="150" step="5" value="100" />
+      <span id="speedValue" class="speed-value">100%</span>
+    </div>
+
+    <div class="group">
+      <button id="btnLoop" class="btn btn-toggle" title="Repetir un tramo corto hasta que salga (también podés arrastrar sobre la línea de tiempo)"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.8 7.2A5 5 0 0 1 12 4.6M13.2 8.8A5 5 0 0 1 4 11.4"/><path d="M12.3 1.8v3h-3M3.7 14.2v-3h3"/></svg>Repetir tramo</button>
+      <button id="btnMetronome" class="btn btn-toggle" title="Metrónomo"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5.6 1.8h4.8L13 14.2H3z"/><path d="M8 11.2l3.6-6.4" stroke-linecap="round"/></svg>Metrónomo</button>
+      <button id="btnView" class="btn btn-toggle" title="Cambiar entre notas que caen y partitura (como tocar leyendo)"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.1"><path d="M1 4h14M1 6.5h14M1 9h14M1 11.5h14"/><ellipse cx="9" cy="10.2" rx="2" ry="1.4" fill="currentColor" transform="rotate(-20 9 10.2)"/></svg>Partitura</button>
+    </div>
+  </section>
+
+  <!-- ======================== PLAN DE LA LECCIÓN ======================== -->
+  <section id="stepsRow" class="steps-row" title="Cada lección viene en pasos cortos, como en una clase. Clic en un número para ir a ese paso.">
+    <span class="steps-kicker">Plan</span>
+    <div id="stepDots" class="step-dots"></div>
+    <div class="step-current">
+      <b id="stepLabel">—</b>
+      <span id="stepSub"></span>
+    </div>
+    <button id="btnStepGo" class="btn btn-step">Hacer este paso</button>
+  </section>
+
+  <!-- ======================== LÍNEA DE TIEMPO ======================== -->
+  <section class="timeline-row">
+    <span id="barDisplay" class="bar-display">Compás 1/1</span>
+    <div id="timeline" class="timeline" title="Clic: saltar a un compás · Arrastrar: elegir un tramo para repetir">
+      <div id="timelineTicks" class="timeline-ticks"></div>
+      <div id="loopRegion" class="loop-region"></div>
+      <div id="timelineFill" class="timeline-fill"></div>
+      <div id="timelineSelect" class="timeline-select"></div>
+    </div>
+    <span id="timeDisplay" class="time-display">0:00 / 0:00</span>
+  </section>
+
+  <!-- ======================== ESCENARIO ======================== -->
+  <main id="stage" class="stage">
+    <canvas id="stageCanvas"></canvas>
+
+    <div class="hud-left">
+      <div class="hud-card" id="chordCard">
+        <div class="hud-kicker">Estás tocando</div>
+        <div id="chordName" class="chord-name">—</div>
+        <div id="chordType" class="chord-type">Tocá una tecla</div>
+      </div>
+      <div class="hud-card staff-card" id="staffCard" title="Así se escribe en partitura lo que viene. Mirarlo de reojo te enseña a leer de a poco.">
+        <div class="hud-kicker">En partitura</div>
+        <canvas id="staffCanvas" width="220" height="120"></canvas>
+      </div>
+      <div class="hud-card lesson-card" id="lessonCard">
+        <div class="hud-kicker">Qué aprendés</div>
+        <div id="lessonConcept" class="lesson-concept"></div>
+        <div id="lessonTip" class="lesson-tip"></div>
+      </div>
+    </div>
+
+    <div class="hud-right">
+      <div class="stat"><div class="stat-label">Racha</div><div id="statCombo" class="stat-value">0</div></div>
+      <div class="stat"><div class="stat-label">Precisión</div><div id="statAcc" class="stat-value">—</div></div>
+      <div class="stat"><div class="stat-label">Notas</div><div id="statNotes" class="stat-value small">0/0</div></div>
+    </div>
+
+    <div id="loopInfo" class="loop-info">
+      <span id="loopText">Compases 1–4</span>
+      <label class="loop-auto" title="Con ritmo: cuando una vuelta sale con 90% o más, la velocidad sube 5% sola (hasta 100%)">
+        <input type="checkbox" id="loopAutoSpeed" checked /> Subir velocidad sola
+      </label>
+      <button id="btnLoopExit" class="btn btn-loop-exit" title="Volver a la canción entera (Esc)">Salir del tramo</button>
+    </div>
+
+    <div id="centerMessage" class="center-message">
+      <div class="center-title" id="centerTitle">Apretá Empezar o la barra espaciadora</div>
+      <div class="center-sub" id="centerSub"></div>
+    </div>
+
+    <div id="waitHint" class="wait-hint"></div>
+    <div id="recordBanner" class="record-banner"></div>
+  </main>
+
+  <!-- ======================== TECLADO ======================== -->
+  <footer class="piano">
+    <canvas id="pianoCanvas"></canvas>
+  </footer>
+
+  <div id="toasts" class="toasts"></div>
+
+  <!-- ======================== BIBLIOTECA ======================== -->
+  <div id="libraryModal" class="modal">
+    <div class="modal-card library">
+      <div class="modal-head">
+        <h2>Tu práctica de hoy</h2>
+        <button class="btn btn-icon" data-close="libraryModal" title="Cerrar (Esc)">✕</button>
+      </div>
+      <p class="home-intro">Como en una clase: primero calentás, después avanzás con tu lección y al final repasás algo viejo para que no se olvide.</p>
+      <div class="piano-nav-hint home-hint">Desde el piano, una <b>tecla blanca</b> (o el pedal) continúa tu lección y una <b>tecla negra</b> abre el calentamiento.</div>
+      <div id="homeToday" class="home-today"></div>
+      <h3 class="home-section">Tu semana</h3>
+      <div id="homeWeek" class="home-week"></div>
+      <h3 class="home-section">Ruta de lecciones</h3>
+      <p class="stars-legend">
+        <b>★</b> la terminaste en Aprender. <b>★★</b> con ritmo y las dos manos, al 75%. <b>★★★</b> con ritmo y las dos manos, al 90% y a velocidad normal.
+      </p>
+      <div id="libraryList" class="library-list"></div>
+      <div class="modal-foot">
+        <button id="btnImport" class="btn" title="Cualquier .mid de internet">Importar archivo .MID</button>
+        <button id="btnExport" class="btn" title="Descarga la canción elegida">Descargar la actual como .MID</button>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="fileInput" accept=".mid,.midi,.json" hidden />
+
+  <!-- ======================== LECTURA DE NOTAS ======================== -->
+  <div id="readerModal" class="modal">
+    <div class="modal-card reader">
+      <div class="modal-head">
+        <h2>Entrenamiento</h2>
+        <div class="seg" id="readerTabs">
+          <button data-rmode="read" title="Aparece una nota en el pentagrama y la tocás">Lectura</button>
+          <button data-rmode="ear" title="Suena una nota y la buscás en el teclado">Oído</button>
+        </div>
+        <button class="btn btn-icon" data-close="readerModal" title="Cerrar (Esc)">✕</button>
+      </div>
+      <div id="readerLevels" class="reader-levels"></div>
+      <p id="readerDesc" class="reader-desc"></p>
+      <div class="reader-stage">
+        <canvas id="readerCanvas"></canvas>
+        <div id="readerOverlay" class="reader-overlay"></div>
+      </div>
+      <div class="reader-pad-wrap">
+        <span class="reader-pad-label">Tocá en tu teclado… o respondé acá:</span>
+        <div id="readerPad" class="reader-pad"></div>
+      </div>
+      <div class="reader-status">
+        <span id="readerCount" class="reader-count">0/20</span>
+        <span id="readerFeedback" class="reader-feedback"></span>
+        <span id="readerPace" class="reader-pace"></span>
+        <button id="readerReplay" class="btn hidden" title="Volver a escuchar (Espacio)">Repetir</button>
+      </div>
+      <div class="modal-actions">
+        <button id="readerStart" class="btn btn-primary">Empezar ronda</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== ACORDES ======================== -->
+  <div id="chordsModal" class="modal">
+    <div class="modal-card chords">
+      <div class="modal-head">
+        <h2>Acordes</h2>
+        <div class="seg" id="chordTabs">
+          <button data-ctab="play" title="Aparece un acorde (C, Am, G7…) y lo tocás">Tocar</button>
+          <button data-ctab="prog" title="Progresiones a tempo, con las posiciones más cómodas">Progresiones</button>
+          <button data-ctab="ear" title="Suena un acorde o una progresión y reconocés qué es">Reconocer</button>
+        </div>
+        <button class="btn btn-icon" data-close="chordsModal" title="Cerrar (Esc)">✕</button>
+      </div>
+      <div id="chordLevels" class="reader-levels"></div>
+      <p id="chordDesc" class="reader-desc"></p>
+      <div id="chordStage" class="chord-stage"></div>
+      <div id="chordKeysWrap" class="chord-keys-wrap"><canvas id="chordKeys"></canvas></div>
+      <div class="reader-status">
+        <span id="chordCount" class="reader-count"></span>
+        <span id="chordFeedback" class="reader-feedback"></span>
+        <span id="chordPace" class="reader-pace"></span>
+      </div>
+      <div class="modal-actions chord-actions" id="chordActions"></div>
+    </div>
+  </div>
+
+  <!-- ======================== RESULTADOS ======================== -->
+  <div id="resultsModal" class="modal">
+    <div class="modal-card results">
+      <div id="resStars" class="results-stars"></div>
+      <h2 id="resTitle">¡Terminaste!</h2>
+      <p id="resSubtitle" class="results-sub"></p>
+      <div id="resGrid" class="results-grid"></div>
+      <div id="resTeacher" class="teacher-notes hidden"></div>
+      <div class="next-goal">
+        <div class="next-goal-label">Próximo paso</div>
+        <div id="resGoal" class="next-goal-text"></div>
+      </div>
+      <div class="modal-actions">
+        <button id="resClose" class="btn">Cerrar</button>
+        <button id="resRetry" class="btn">Repetir igual</button>
+        <button id="resNext" class="btn btn-primary">Siguiente</button>
+      </div>
+      <div id="resCountdownWrap" class="countdown hidden" title="Sigue solo. Si tocás el mouse o la PC, se frena."><i id="resCountdown"></i></div>
+      <div class="piano-nav-hint">Desde el piano: <b>tecla blanca</b> o pedal para seguir, <b>tecla negra</b> para repetir.</div>
+    </div>
+  </div>
+
+  <!-- ======================== GUARDAR GRABACIÓN ======================== -->
+  <div id="saveModal" class="modal">
+    <div class="modal-card">
+      <h2>Grabación lista</h2>
+      <p id="saveDesc"></p>
+      <input type="text" id="saveTitle" class="modal-input" maxlength="60" placeholder="Ej: Mi idea en La menor" />
+      <div class="modal-actions">
+        <button id="btnSaveCancel" class="btn">Descartar</button>
+        <button id="btnSaveConfirm" class="btn btn-primary">Guardar y practicar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== BIENVENIDA ======================== -->
+  <div id="welcomeModal" class="modal">
+    <div class="modal-card welcome">
+      <h2>Bienvenido a PianoFlow</h2>
+      <ol class="welcome-steps">
+        <li><b>Conectá tu teclado</b> con el cable USB (en Yamaha: puerto <i>USB TO HOST</i>). Si no tenés uno a mano, usá el mouse o el teclado de la PC: <kbd>A</kbd> <kbd>W</kbd> <kbd>S</kbd> <kbd>E</kbd> <kbd>D</kbd>… es Do Do# Re Re# Mi…</li>
+        <li><b>Cada día, Inicio te arma una práctica corta</b> como la de una clase: lectura de notas → tu lección → un repaso.</li>
+        <li><b>Cada lección viene en pasos cortos</b> (la barra <i>Plan</i>): escuchar → aprender por partes y por mano (las notas te esperan) → con ritmo, subiendo la velocidad. Al cumplir un paso, la app te lleva al siguiente.</li>
+        <li><b>Lo difícil, en pedacitos:</b> arrastrá sobre la línea de tiempo para repetir solo un tramo. La velocidad sube sola cuando te sale.</li>
+        <li><b>Mejor poco y todos los días:</b> 10 minutos diarios rinden más que 2 horas el domingo.</li>
+      </ol>
+      <div class="modal-actions">
+        <button id="btnWelcomeStart" class="btn btn-primary">¡Empezar con la Lección 1!</button>
+      </div>
+      <div class="piano-nav-hint">O tocá cualquier tecla de tu piano para empezar</div>
+    </div>
+  </div>
+
+  <!-- ======================== AJUSTES ======================== -->
+  <div id="settingsModal" class="modal modal-right">
+    <div class="modal-card settings">
+      <div class="modal-head">
+        <h2>Ajustes</h2>
+        <button class="btn btn-icon" data-close="settingsModal" title="Cerrar (Esc)">✕</button>
+      </div>
+
+      <div class="settings-section">
+        <h3>Ver</h3>
+        <div class="setting"><span>Leer partitura <small>"No": sin pentagrama, sin vista partitura y el calentamiento es de acordes. Activalo cuando quieras aprender a leer.</small></span>
+          <div class="seg seg-sm" data-setting="sheetMusic">
+            <button data-value="off">No</button><button data-value="on">Sí</button>
+          </div>
+        </div>
+        <div class="setting"><span>Nombres de notas</span>
+          <div class="seg seg-sm" data-setting="noteNames">
+            <button data-value="es">Do Re Mi</button><button data-value="en">C D E</button><button data-value="both">Do/C</button>
+          </div>
+        </div>
+        <div class="setting"><span>En las notas que caen</span>
+          <div class="seg seg-sm" data-setting="barLabel">
+            <button data-value="both">Dedo + nota</button><button data-value="finger">Dedo</button><button data-value="note">Nota</button><button data-value="none">Nada</button>
+          </div>
+        </div>
+        <div class="setting"><span>Nombres en el teclado</span>
+          <div class="seg seg-sm" data-setting="keyLabels">
+            <button data-value="all">Todas</button><button data-value="c">Solo Do</button><button data-value="none">Ninguna</button>
+          </div>
+        </div>
+        <div class="setting"><span>Pentagrama de ayuda</span>
+          <div class="seg seg-sm" data-setting="showStaff">
+            <button data-value="on">Mostrar</button><button data-value="off">Ocultar</button>
+          </div>
+        </div>
+        <div class="setting"><span>Teclado en pantalla</span>
+          <div class="seg seg-sm" data-setting="range">
+            <button data-value="auto" title="Se agranda para mostrar solo lo que usa la canción">Auto</button><button data-value="61" title="Igual que un teclado de 61 teclas (PSR-E383, PSR-E373…)">61</button><button data-value="76">76</button><button data-value="88">88</button>
+          </div>
+        </div>
+        <div class="setting"><span>Efectos visuales (chispas)</span>
+          <div class="seg seg-sm" data-setting="effects">
+            <button data-value="on">Sí</button><button data-value="off">No</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Sonido</h3>
+        <div class="setting"><span>Mis teclas suenan en la PC <small>Apagalo si tu teclado ya suena por sus parlantes (evita el sonido doble).</small></span>
+          <div class="seg seg-sm" data-setting="userSound">
+            <button data-value="on">Sí</button><button data-value="off">No</button>
+          </div>
+        </div>
+        <div class="setting"><span>La mano que no practicás</span>
+          <div class="seg seg-sm" data-setting="otherHand">
+            <button data-value="play">Suena</button><button data-value="mute">En silencio</button>
+          </div>
+        </div>
+        <div class="setting"><span>Acompañamiento sale por <small>"Teclado" usa los parlantes y el sonido de piano de tu teclado (por USB).</small></span>
+          <div class="seg seg-sm" data-setting="autoOut">
+            <button data-value="pc">PC</button><button data-value="keyboard">Teclado</button>
+          </div>
+        </div>
+        <div class="setting"><span>Volumen general</span><input type="range" min="0" max="100" data-volume="master" /></div>
+        <div class="setting"><span>Volumen acompañamiento</span><input type="range" min="0" max="100" data-volume="auto" /></div>
+        <div class="setting"><span>Volumen metrónomo</span><input type="range" min="0" max="100" data-volume="fx" /></div>
+        <div class="setting-note" id="soundStatus">Sonido: —</div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Teclado MIDI</h3>
+        <div class="setting"><span>Escuchar canales <small>"Solo el 1" ignora los ritmos/estilos y la demo del teclado.</small></span>
+          <div class="seg seg-sm" data-setting="midiChannel">
+            <button data-value="all">Todos (menos batería)</button><button data-value="1">Solo el 1</button>
+          </div>
+        </div>
+        <div class="setting"><span>Corrección de octava <small>Si tu teclado tiene Octave/Transpose activado y todo llega corrido.</small></span>
+          <div class="seg seg-sm" data-setting="octaveShift">
+            <button data-value="-2">−2</button><button data-value="-1">−1</button><button data-value="0">0</button><button data-value="1">+1</button><button data-value="2">+2</button>
+          </div>
+        </div>
+        <div class="setting"><span>Manejar la app desde el piano <small>En las ventanas: tecla blanca o pedal = seguir; tecla negra = repetir. Así no soltás el piano para ir al mouse.</small></span>
+          <div class="seg seg-sm" data-setting="pianoNav">
+            <button data-value="on">Sí</button><button data-value="off">No</button>
+          </div>
+        </div>
+        <div class="setting"><span>Seguir solo después de cada resultado <small>Una cuenta regresiva pasa al próximo paso. Si tocás el mouse, se frena.</small></span>
+          <div class="seg seg-sm" data-setting="autoNext">
+            <button data-value="on">Sí</button><button data-value="off">No</button>
+          </div>
+        </div>
+        <div class="setting"><span>Teclado de la PC como piano <small>A W S E D F T G Y H U J K… · Z / X cambian de octava</small></span>
+          <div class="seg seg-sm" data-setting="pcKeyboard">
+            <button data-value="on">Sí</button><button data-value="off">No</button>
+          </div>
+        </div>
+        <div class="setting-note" id="midiDevices">—</div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Hábito</h3>
+        <div class="setting"><span>Meta diaria</span>
+          <div class="seg seg-sm" data-setting="dailyGoal">
+            <button data-value="5">5 min</button><button data-value="10">10</button><button data-value="15">15</button><button data-value="20">20</button><button data-value="30">30</button>
+          </div>
+        </div>
+        <div class="setting-buttons">
+          <button id="btnShowWelcome" class="btn">Ver la bienvenida otra vez</button>
+          <button id="btnOpenChords" class="btn">Acordes y progresiones</button>
+          <button id="btnOpenReader" class="btn">Lectura y oído (notas)</button>
+          <button id="btnResetProgress" class="btn btn-danger">Borrar mi progreso</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>App</h3>
+        <div class="setting-note" id="installNote">
+          <b>En la PC:</b> usá el ícono <i>PianoFlow</i> del escritorio, o en Edge/Chrome el botón <b>Instalar app</b> de arriba.<br />
+          <b>En el celular (Android):</b> abrí la dirección de la app en Chrome → menú ⋮ → <i>Instalar app</i> / <i>Agregar a pantalla principal</i>.<br />
+          <b>En iPhone:</b> en Safari, botón Compartir → <i>Agregar a inicio</i>.<br />
+          Instalada, abre sin internet. Tu progreso se guarda en cada dispositivo por separado.
+        </div>
+      </div>
+
+      <div class="settings-section shortcuts">
+        <h3>Atajos</h3>
+        <p><kbd>Espacio</kbd> empezar/pausar · <kbd>Enter</kbd> reiniciar · <kbd>←</kbd><kbd>→</kbd> compás anterior/siguiente · <kbd>↑</kbd><kbd>↓</kbd> velocidad · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> modo · <kbd>Esc</kbd> cerrar</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="midi-parser.js"></script>
+  <script src="songs.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
