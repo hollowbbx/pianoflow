@@ -158,31 +158,46 @@
   </footer>
 
   <div id="toasts" class="toasts"></div>
+  <div class="drop-hint">Soltá el archivo para abrirlo<small>MIDI o MusicXML</small></div>
 
   <!-- ======================== BIBLIOTECA ======================== -->
   <div id="libraryModal" class="modal">
     <div class="modal-card library">
       <div class="modal-head">
-        <h2>Tu práctica de hoy</h2>
+        <h2 id="homeTitle">Tu práctica de hoy</h2>
         <button class="btn btn-icon" data-close="libraryModal" title="Cerrar (Esc)">✕</button>
       </div>
       <p class="home-intro">Como en una clase: primero calentás, después avanzás con tu lección y al final repasás algo viejo para que no se olvide.</p>
       <div class="piano-nav-hint home-hint">Desde el piano, una <b>tecla blanca</b> (o el pedal) continúa tu lección y una <b>tecla negra</b> abre el calentamiento.</div>
       <div id="homeToday" class="home-today"></div>
-      <h3 class="home-section">Tu semana</h3>
+      <h3 class="home-section" id="homeWeekTitle">Tu semana</h3>
       <div id="homeWeek" class="home-week"></div>
       <h3 class="home-section">Ruta de lecciones</h3>
       <p class="stars-legend">
         <b>★</b> la terminaste en Aprender. <b>★★</b> con ritmo y las dos manos, al 75%. <b>★★★</b> con ritmo y las dos manos, al 90% y a velocidad normal.
       </p>
       <div id="libraryList" class="library-list"></div>
+      <div class="muse">
+        <h3 class="home-section">Más canciones</h3>
+        <p class="muse-help">Buscá un arreglo en MuseScore, descargalo como <b>MusicXML</b> (trae la digitación) o <b>MIDI</b> y arrastralo a esta ventana. En el celular: desde Descargas, <i>Compartir → PianoFlow</i>. Elegí arreglos que digan <i>easy</i> o <i>piano solo</i>.</p>
+        <form id="museForm" class="muse-form">
+          <input id="museQuery" class="modal-input" type="search" placeholder="Ej: Dirtmouth easy piano" autocomplete="off" />
+          <button class="btn btn-primary" type="submit">Buscar en MuseScore</button>
+        </form>
+        <div id="museChips" class="muse-chips">
+          <button class="btn" type="button" data-q="Hollow Knight easy piano">Hollow Knight</button>
+          <button class="btn" type="button" data-q="Dirtmouth easy piano">Dirtmouth</button>
+          <button class="btn" type="button" data-q="Greenpath piano">Greenpath</button>
+          <button class="btn" type="button" data-q="City of Tears piano">City of Tears</button>
+        </div>
+      </div>
       <div class="modal-foot">
-        <button id="btnImport" class="btn" title="Cualquier .mid de internet">Importar archivo .MID</button>
+        <button id="btnImport" class="btn" title="MIDI (.mid) o MusicXML (.musicxml, .mxl) de MuseScore u otro sitio">Importar MIDI o MusicXML</button>
         <button id="btnExport" class="btn" title="Descarga la canción elegida">Descargar la actual como .MID</button>
       </div>
     </div>
   </div>
-  <input type="file" id="fileInput" accept=".mid,.midi,.json" hidden />
+  <input type="file" id="fileInput" accept=".mid,.midi,.musicxml,.xml,.mxl,.json" hidden />
 
   <!-- ======================== LECTURA DE NOTAS ======================== -->
   <div id="readerModal" class="modal">
@@ -430,6 +445,7 @@
   <script src="audio.js"></script>
   <script src="midi-parser.js"></script>
   <script src="songs.js"></script>
+  <script src="musicxml.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

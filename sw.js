@@ -1,7 +1,7 @@
 // PianoFlow · Service worker: hace que la app abra y funcione sin internet (y sin el servidor local).
 // - Archivos de la app: primero la red (para recibir actualizaciones); si no hay, la copia guardada.
 // - Sonidos del piano real: se guardan la primera vez y después salen de la copia.
-const APP_CACHE = 'pianoflow-app-v7';
+const APP_CACHE = 'pianoflow-app-v8';
 const SOUND_CACHE = 'pianoflow-sounds-v1';
 const APP_FILES = [
   './',
@@ -11,6 +11,7 @@ const APP_FILES = [
   'audio.js',
   'midi-parser.js',
   'songs.js',
+  'musicxml.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',
@@ -33,6 +34,23 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const req = event.request;
+  // "Compartir → PianoFlow" en el celular: guardamos el archivo y abrimos la app para importarlo
+  if (req.method === 'POST' && new URL(req.url).pathname.endsWith('/compartir')) {
+    event.respondWith(
+      (async () => {
+        try {
+          const form = await req.formData();
+          const file = form.get('archivo');
+          if (file && file.name) {
+            const cache = await caches.open('pianoflow-share');
+            await cache.put(new URL('compartido-archivo', self.registration.scope).href, new Response(file, { headers: { 'x-name': encodeURIComponent(file.name) } }));
+          }
+        } catch (_) {}
+        return Response.redirect(new URL('./?compartido=1', self.registration.scope).href, 303);
+      })()
+    );
+    return;
+  }
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 

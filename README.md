@@ -82,6 +82,22 @@ Se abre desde Inicio (calentamiento) o en ⚙️ → *Acordes y progresiones*. T
 desaparecen el pentagrama, la vista partitura y el paso de leerla, y el calentamiento pasa a ser de acordes.
 Cuando quieras aprender a leer, lo activás.
 
+### 🎵 Tus canciones (MuseScore, MIDI y MusicXML)
+En Inicio, abajo de todo, **Más canciones** tiene un buscador que abre MuseScore con la búsqueda lista
+(por ejemplo "Dirtmouth easy piano"). Descargá el arreglo como **MusicXML** (mejor: trae la separación exacta
+de manos y la digitación del arreglador) o como **MIDI**, y abrilo en PianoFlow de cualquiera de estas formas:
+- **arrastrando** el archivo a la ventana;
+- con **doble clic** en el archivo (con la app instalada en la PC);
+- en el celular (Android, app instalada): desde Descargas, **Compartir → PianoFlow**;
+- con el botón **Importar MIDI o MusicXML**.
+
+Cada canción importada recibe su propio plan de pasos, igual que las lecciones. MuseScore no tiene una API pública
+(la cerró), por eso la integración es abrir la búsqueda y recibir el archivo que descargás vos.
+
+### 🎹 Tocar libre
+En Inicio, **Tocar libre**: el **piano libre** (sin canción: ves en grande qué nota o acorde estás tocando y podés
+grabar) o **cualquier pieza a tu ritmo**, sin plan, sin puntaje y sin resultados.
+
 ### 🎹 Manos en el piano (sin mouse)
 Toda la práctica se puede manejar desde el teclado del piano:
 - **Tocá cualquier tecla** para empezar una canción o una ronda de lectura/oído.
@@ -228,6 +244,7 @@ Las fuentes se descargan la primera vez y quedan guardadas para usar sin interne
 - `app.js` — motor de práctica (modos, tiempos, bucle, estrellas, racha, dibujo, MIDI, grabador).
 - `audio.js` — piano real (muestras Salamander Grand Piano) + sintetizador de respaldo + salida MIDI al teclado.
 - `midi-parser.js` — lector/exportador de archivos `.mid` y detector de acordes.
+- `musicxml.js` — lector de MusicXML (.musicxml y .mxl comprimido), con manos, ligaduras, anacrusa, tempo y digitación.
 - `songs.js` — las 12 lecciones, escritas en una notación compacta y validada compás por compás.
 - `PianoFlow.vbs` — abre la app en su ventana (lo usa el ícono del escritorio). `iniciar_piano.bat` hace lo mismo.
 - `servidor.py` — servidor local invisible en `localhost:8085`.

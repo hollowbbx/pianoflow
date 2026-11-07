@@ -1,7 +1,7 @@
 {
   "name": "PianoFlow · Aprendé piano",
   "short_name": "PianoFlow",
-  "description": "Aprendé piano con tu teclado MIDI: lecciones guiadas, lectura de notas y práctica diaria.",
+  "description": "Aprendé piano con tu teclado MIDI: lecciones guiadas, acordes, progresiones y práctica diaria.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
@@ -10,8 +10,64 @@
   "background_color": "#100f0d",
   "theme_color": "#100f0d",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ]
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "audio/midi": [
+          ".mid",
+          ".midi"
+        ],
+        "application/vnd.recordare.musicxml": [
+          ".mxl"
+        ],
+        "application/vnd.recordare.musicxml+xml": [
+          ".musicxml",
+          ".xml"
+        ]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "./compartir",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "archivo",
+          "accept": [
+            "audio/midi",
+            "audio/x-midi",
+            "audio/mid",
+            ".mid",
+            ".midi",
+            "application/vnd.recordare.musicxml",
+            "application/vnd.recordare.musicxml+xml",
+            ".mxl",
+            ".musicxml"
+          ]
+        }
+      ]
+    }
+  }
 }

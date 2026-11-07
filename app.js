@@ -282,12 +282,17 @@
   }
 
   function selectSong(id) {
-    const raw = findSong(id) || LIB.BUILTIN_SONGS[0];
+    selectRaw(findSong(id) || LIB.BUILTIN_SONGS[0]);
+  }
+
+  function selectRaw(raw) {
     pause();
     audio.allNotesOff();
     S.song = prepareSong(raw);
-    settings.lastSong = raw.id;
-    saveSettings();
+    if (!raw.isFreePiano) {
+      settings.lastSong = raw.id;
+      saveSettings();
+    }
     if (S.hand !== 'both' && !S.song.hands.has(S.hand)) S.hand = 'both';
     S.loop.on = false;
     computeRange();
@@ -403,6 +408,7 @@
 
   // Marca los pasos cumplidos y devuelve los nuevos
   function completeSteps(cov) {
+    if (S.free) return [];
     const song = S.song;
     const plan = lessonPlan(song);
     const rec = progress.songs[song.id] || (progress.songs[song.id] = { stars: 0, plays: 0 });
@@ -459,6 +465,15 @@
 
   function updateStepper() {
     if (!S.song) return;
+    if (S.free) {
+      ui.stepDots.innerHTML = '';
+      ui.stepLabel.textContent = S.freeEmpty ? 'Piano libre' : `Tocar libre: ${S.song.title}`;
+      ui.stepSub.textContent = S.freeEmpty ? 'Sin canción: tocá lo que quieras. Con Grabar lo guardás.' : 'Sin plan ni puntaje: a tu ritmo, cambiá modo y velocidad cuando quieras.';
+      ui.btnStepGo.textContent = 'Salir de tocar libre';
+      ui.btnStepGo.dataset.action = 'exitFree';
+      ui.btnStepGo.classList.remove('hidden');
+      return;
+    }
     const song = S.song;
     const plan = lessonPlan(song);
     const active = S.activeStep != null && plan[S.activeStep] && !stepIsDone(song.id, plan[S.activeStep]) ? S.activeStep : null;
@@ -496,8 +511,38 @@
     return rec && rec.id !== id ? rec : null;
   }
 
+  // Tocar libre: una pieza sin plan ni puntaje, o el piano solo (sin canción)
+  const FREE_PIANO = { id: '__piano_libre', title: 'Piano libre', artist: '', bpm: 100, notes: [], isFreePiano: true };
+  function openFree(id) {
+    S.free = true;
+    S.freeEmpty = !id;
+    document.body.classList.add('free-mode');
+    document.body.classList.toggle('free-empty', S.freeEmpty);
+    if (id) {
+      selectSong(id);
+      if (S.mode === 'listen') setMode('learn');
+    } else {
+      selectRaw(FREE_PIANO);
+    }
+    updateStepper();
+    updateCenterMessage();
+    toast(id ? 'Tocar libre: sin plan ni puntaje. Tocá cualquier tecla para empezar.' : 'Piano libre: tocá lo que quieras.', '', { ms: 4000 });
+  }
+  function exitFree() {
+    S.free = false;
+    S.freeEmpty = false;
+    document.body.classList.remove('free-mode', 'free-empty');
+    const back = findSong(settings.lastSong) && settings.lastSong !== FREE_PIANO.id ? settings.lastSong : (recommendedSong() || LIB.BUILTIN_SONGS[0]).id;
+    openLesson(back);
+  }
+
   // Abre una lección en su próximo paso pendiente
   function openLesson(id, opts = {}) {
+    if (S.free) {
+      S.free = false;
+      S.freeEmpty = false;
+      document.body.classList.remove('free-mode', 'free-empty');
+    }
     selectSong(id);
     const plan = lessonPlan(S.song);
     const i = nextStepIdx(S.song.id, plan);
@@ -819,6 +864,10 @@
     }
     if (!S.song) return;
 
+    if (S.freeEmpty) {
+      if (settings.effects === 'on') spawnParticles(midi, COLORS[midi >= 60 ? 'R' : 'L'].light, 6);
+      return;
+    }
     // Tocar cualquier tecla arranca la canción (no hace falta soltar el piano para usar el mouse)
     if (!S.playing && S.mode !== 'listen' && !anyModalOpen()) {
       play();
@@ -1213,6 +1262,11 @@
 
   function finishSong() {
     pause();
+    if (S.free) {
+      seek(startTime());
+      toast('Fin. Tocá cualquier tecla para tocarla otra vez, o elegí otra pieza.', 'good', { ms: 5000 });
+      return;
+    }
     const run = S.run;
     const song = S.song;
     if (S.mode === 'listen' || S.totals.user === 0 || run.hits + run.missed + run.errors === 0) {
@@ -1457,6 +1511,11 @@
   }
 
   function updateCenterMessage() {
+    if (S.freeEmpty) {
+      ui.centerTitle.textContent = 'Piano libre';
+      ui.centerSub.textContent = 'Tocá lo que quieras: acá vas a ver qué nota o acorde estás tocando.';
+      return;
+    }
     const msgs = {
       listen: ['Apretá Empezar para escuchar', 'Escuchá y mirá la canción entera antes de tocarla: tu cerebro aprende el "mapa" primero.'],
       learn: ['Tocá cualquier tecla para empezar', 'Las notas se frenan y te esperan. Usá el dedo que indica el número de cada nota.'],
@@ -1524,6 +1583,11 @@
     if (c) {
       ui.chordName.textContent = c.name;
       ui.chordType.textContent = c.type;
+      // En el piano libre, el acorde se ve grande en el centro
+      if (S.freeEmpty) {
+        ui.centerTitle.textContent = c.name;
+        ui.centerSub.textContent = c.type;
+      }
     }
   }
 
@@ -1661,7 +1725,7 @@
     let max;
     if (r === '88') [min, max] = [21, 108];
     else if (r === '76') [min, max] = [28, 103];
-    else if (r === '61' || !S.song) [min, max] = [36, 96];
+    else if (r === '61' || !S.song || !S.song.notes.length) [min, max] = [36, 96];
     else if (window.innerWidth < 700) {
       // Celular: teclas más anchas para el dedo (solo la zona que usa la canción)
       min = Math.min(S.song.minMidi, 60) - 1;
@@ -4175,6 +4239,11 @@
   }
   function closeModal(id) {
     $(id).classList.remove('open');
+    if (id === 'libraryModal' && S.pickFree) {
+      S.pickFree = false;
+      $('libraryModal').classList.remove('pick-mode');
+      $('homeTitle').textContent = 'Tu práctica de hoy';
+    }
     if (id === 'readerModal') stopReader();
     if (id === 'resultsModal') stopAutoNext();
     if (id === 'chordsModal') {
@@ -4252,6 +4321,15 @@
              <button class="btn" data-home="review" data-id="${escapeHtml(review.song.id)}">${t.review ? '✓ Hecho · otra vez' : 'Repasar'}</button>`
           : `<div class="today-title">${t.review ? '✓ Repaso hecho' : 'Nada por ahora'}</div>
              <div class="today-sub">Cuando una canción llegue a ★★, va a volver acá unos días después para que no se olvide.</div>`}
+      </div>
+      <div class="today-card free-card">
+        <div class="today-kicker">Cuando quieras</div>
+        <div class="today-title">Tocar libre</div>
+        <div class="today-sub">Sin plan ni puntaje: el piano solo, o cualquier pieza a tu ritmo.</div>
+        <div class="today-btns">
+          <button class="btn" data-home="freepiano">Piano libre</button>
+          <button class="btn" data-home="freepick">Elegir una pieza</button>
+        </div>
       </div>`;
   }
 
@@ -4274,6 +4352,15 @@
       openLesson(b.dataset.id, { autoplay: true });
     } else if (what === 'import') {
       ui.fileInput.click();
+    } else if (what === 'freepiano') {
+      closeModal('libraryModal');
+      openFree(null);
+    } else if (what === 'freepick') {
+      S.pickFree = true;
+      $('libraryModal').classList.add('pick-mode');
+      $('homeTitle').textContent = 'Elegí una pieza para tocar libre';
+      renderLibrary();
+      $('libraryModal').querySelector('.modal-card').scrollTop = 0;
     }
   });
 
@@ -4431,7 +4518,7 @@
         <div class="song-grid">${LIB.TECHNIQUE.map(s => card(s, null)).join('')}</div></div>`;
     }
     html += `<div class="level-block"><div class="level-title">Mis grabaciones e importados</div>
-      <div class="level-blurb">Grabá con Grabar o importá cualquier .mid (por ejemplo de musescore.com o bitmidi.com).</div>
+      <div class="level-blurb">Grabá con Grabar, o importá un MIDI o MusicXML (abajo, en Más canciones, podés buscarlos en MuseScore).</div>
       ${customSongs.length ? `<div class="song-grid">${customSongs.map(s => card(s, null)).join('')}</div>` : '<div class="empty-note">Todavía no hay nada acá.</div>'}</div>`;
     ui.libraryList.innerHTML = html;
   }
@@ -4454,8 +4541,10 @@
     }
     const c = e.target.closest('[data-song]');
     if (c) {
+      const free = S.pickFree;
       closeModal('libraryModal');
-      openLesson(c.dataset.song);
+      if (free) openFree(c.dataset.song);
+      else openLesson(c.dataset.song);
     }
   });
   ui.libraryList.addEventListener('keydown', e => {
@@ -4474,6 +4563,7 @@
   ui.btnStepGo.addEventListener('click', () => {
     audio.init();
     const a = ui.btnStepGo.dataset.action;
+    if (a === 'exitFree') return exitFree();
     if (a === 'step') applyStep(Number(ui.btnStepGo.dataset.step), { autoplay: true });
     else if (a === 'nextSong') {
       const n = nextLessonAfter(S.song.id);
@@ -4482,13 +4572,14 @@
   });
 
   $('btnImport').addEventListener('click', () => ui.fileInput.click());
-  ui.fileInput.addEventListener('change', async e => {
-    const file = e.target.files[0];
-    ui.fileInput.value = '';
+  // Abre cualquier archivo de canción: .mid/.midi, MusicXML (.musicxml/.xml/.mxl) o .json
+  async function importFile(file) {
     if (!file) return;
     try {
       let song;
-      if (/\.json$/i.test(file.name)) {
+      if (/\.(musicxml|xml|mxl)$/i.test(file.name)) {
+        song = await window.MusicXmlParser.parse(await file.arrayBuffer(), file.name);
+      } else if (/\.json$/i.test(file.name)) {
         song = JSON.parse(await file.text());
         if (!song || !Array.isArray(song.notes) || !song.notes.length) throw new Error('El JSON no tiene notas.');
         song.id = 'custom_' + Date.now();
@@ -4500,14 +4591,92 @@
       if (song.notes.length > 20000) throw new Error('El archivo es demasiado grande (más de 20.000 notas).');
       customSongs.push(song);
       saveCustom();
-      closeModal('libraryModal');
+      document.querySelectorAll('.modal.open').forEach(m => closeModal(m.id));
+      S.free = false;
+      S.freeEmpty = false;
+      document.body.classList.remove('free-mode');
       openLesson(song.id);
       audio.chime('success');
       const hands = new Set(song.notes.map(n => n.hand));
-      toast(`"${escapeHtml(song.title)}" cargada: ${song.notes.length} notas${hands.size > 1 ? ', separadas en dos manos' : ''}. Empezá en Escuchar.`, 'good', { ms: 5000 });
+      const fingers = song.notes.some(n => n.finger);
+      toast(`"${escapeHtml(song.title)}" cargada: ${song.notes.length} notas${hands.size > 1 ? ', separadas en dos manos' : ''}${fingers ? ', con digitación' : ''}. Empezá escuchándola.`, 'good', { ms: 6000 });
     } catch (err) {
-      toast('No se pudo leer el archivo: ' + escapeHtml(err.message), 'warn', { ms: 6000 });
+      toast('No se pudo leer el archivo: ' + escapeHtml(err.message), 'warn', { ms: 7000 });
     }
+  }
+
+  ui.fileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    ui.fileInput.value = '';
+    importFile(file);
+  });
+
+  // Arrastrar un archivo a la ventana
+  const SONG_FILE = /\.(mid|midi|musicxml|xml|mxl|json)$/i;
+  let dragDepth = 0;
+  window.addEventListener('dragenter', e => {
+    if (![...(e.dataTransfer && e.dataTransfer.types) || []].includes('Files')) return;
+    dragDepth++;
+    document.body.classList.add('dropping');
+  });
+  window.addEventListener('dragleave', () => {
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (!dragDepth) document.body.classList.remove('dropping');
+  });
+  window.addEventListener('dragover', e => {
+    if ([...(e.dataTransfer && e.dataTransfer.types) || []].includes('Files')) e.preventDefault();
+  });
+  window.addEventListener('drop', e => {
+    dragDepth = 0;
+    document.body.classList.remove('dropping');
+    const file = [...((e.dataTransfer && e.dataTransfer.files) || [])].find(f => SONG_FILE.test(f.name));
+    if (!file) return;
+    e.preventDefault();
+    audio.init();
+    importFile(file);
+  });
+
+  // App instalada en la PC: doble clic en un .mid/.mxl lo abre directo acá
+  if ('launchQueue' in window) {
+    window.launchQueue.setConsumer(async params => {
+      for (const h of params.files || []) {
+        const f = await h.getFile();
+        if (SONG_FILE.test(f.name)) await importFile(f);
+      }
+    });
+  }
+
+  // Celular: "Compartir → PianoFlow" desde Descargas (el service worker guarda el archivo)
+  async function importShared() {
+    if (!/[?&]compartido=1/.test(location.search) || !('caches' in window)) return;
+    history.replaceState(null, '', location.pathname);
+    try {
+      const cache = await caches.open('pianoflow-share');
+      const key = new URL('compartido-archivo', location.href).href;
+      const res = await cache.match(key);
+      if (!res) return;
+      const name = decodeURIComponent(res.headers.get('x-name') || 'cancion.mid');
+      const blob = await res.blob();
+      await cache.delete(key);
+      importFile(new File([blob], name));
+    } catch (_) {}
+  }
+
+  // Buscar en MuseScore (se abre aparte; después descargás el MIDI o el MusicXML y lo abrís acá)
+  function searchMuseScore(q) {
+    const query = (q || '').trim();
+    if (!query) return;
+    const withPiano = /piano/i.test(query) ? query : `${query} piano`;
+    window.open(`https://musescore.com/sheetmusic?text=${encodeURIComponent(withPiano)}`, '_blank', 'noopener');
+    toast('En MuseScore: abrí la partitura → Download → <b>MusicXML</b> (mejor: trae digitación) o <b>MIDI</b>. Después arrastrá el archivo acá o usá Importar.', '', { ms: 9000 });
+  }
+  $('museForm').addEventListener('submit', e => {
+    e.preventDefault();
+    searchMuseScore($('museQuery').value);
+  });
+  $('museChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-q]');
+    if (b) searchMuseScore(b.dataset.q);
   });
 
   $('btnExport').addEventListener('click', () => {
@@ -4800,6 +4969,7 @@
   requestAnimationFrame(frame);
   if (!settings.welcomed) openModal('welcomeModal');
   else openHome();
+  importShared();
 
   // App instalable: funciona sin internet y se puede instalar con ícono propio (PC y celular)
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
@@ -4826,7 +4996,7 @@
 
   // Para depurar desde la consola
   window.PianoFlowDebug = {
-    S, R, K, audio, settings, progress, selectSong, setMode, setHand, setSpeed, setLoop, seek, play, pause, onUserNoteOn, onUserNoteOff, lessonPlan, applyStep, openLesson,
+    S, R, K, audio, settings, progress, importFile, openFree, exitFree, selectSong, setMode, setHand, setSpeed, setLoop, seek, play, pause, onUserNoteOn, onUserNoteOff, lessonPlan, applyStep, openLesson,
     // Avanza la simulación a mano (útil para pruebas automáticas con la pestaña oculta)
     step(dt = 1 / 60, n = 1) {
       for (let i = 0; i < n; i++) {

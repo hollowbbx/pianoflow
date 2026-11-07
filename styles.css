@@ -1301,3 +1301,48 @@ h2, h3, .brand span, .song-button-title, .today-title, .center-title, #resTitle,
 }
 .btn-loop-exit { padding: 3px 10px; font-size: 0.78rem; background: transparent; border-color: rgba(240, 203, 184, 0.45); color: #f0cbb8; }
 .btn-loop-exit:hover { background: rgba(240, 203, 184, 0.12); }
+
+/* ======================== TOCAR LIBRE ======================== */
+.today-card.free-card { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.today-card.free-card .today-kicker { flex-basis: 100%; }
+.today-card.free-card .today-sub { margin: 0; flex: 1; min-width: 200px; }
+.today-card.free-card .today-btns { margin-top: 0; }
+body.free-mode .hud-right, body.free-mode .lesson-card { display: none; }
+body.free-empty .practice-bar, body.free-empty .timeline-row { display: none; }
+body.free-empty .center-message { opacity: 1 !important; }
+body.free-empty .center-title { font-size: 2.6rem; }
+
+/* Elegir una pieza para tocar libre: solo la lista */
+#libraryModal.pick-mode .home-intro, #libraryModal.pick-mode .home-hint, #libraryModal.pick-mode #homeToday,
+#libraryModal.pick-mode #homeWeek, #libraryModal.pick-mode #homeWeekTitle, #libraryModal.pick-mode .stars-legend { display: none; }
+
+/* ======================== MÁS CANCIONES (MuseScore) ======================== */
+.muse { margin-top: 18px; padding-top: 4px; border-top: 1px solid var(--line); }
+.muse-help { font-size: 0.82rem !important; margin-bottom: 10px !important; }
+.muse-form { display: flex; gap: 8px; }
+.muse-form .modal-input { flex: 1; font-size: 0.92rem; padding: 8px 10px; }
+.muse-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.muse-chips .btn { padding: 4px 10px; font-size: 0.8rem; }
+
+/* Soltar un archivo en la ventana */
+.drop-hint {
+  position: fixed;
+  inset: 16px;
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px dashed var(--rh);
+  border-radius: var(--r-lg);
+  background: rgba(16, 15, 13, 0.88);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  pointer-events: none;
+}
+.drop-hint small { font-family: var(--font-ui); font-size: 0.9rem; color: var(--muted); }
+body.dropping .drop-hint { display: flex; }
+@media (max-width: 700px) {
+  .muse-form { flex-direction: column; }
+}
