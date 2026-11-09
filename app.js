@@ -364,7 +364,7 @@
     });
     // Las ayudas se van apagando: al 80% sin nombres de notas, al 100% sin ayudas
     const HINTS = { 0.6: null, 0.8: 'finger', 1: 'none' };
-    const HINT_TXT = { finger: ', sin nombres de notas', none: ', sin ayudas' };
+    const HINT_TXT = { finger: ', sin nombres de notas', none: ', solo con los números de dedo' };
     for (const [sp, acc] of RHYTHM_STEPS) {
       const hints = HINTS[sp] || null;
       steps.push({
@@ -1639,9 +1639,17 @@
     if (rem.length === 1) {
       const f = rem[0].finger ? ` con el dedo <b>${rem[0].finger}</b>` : '';
       el.innerHTML = `Tocá <b>${nm(rem[0].midi)}</b>${f}${handTxt}`;
-    } else {
-      el.innerHTML = `Tocá juntas: <b>${rem.map(n => nm(n.midi)).join(' + ')}</b>${handTxt}`;
+      return;
     }
+    // Varias notas: cada una con su dedo, la izquierda primero (como se lee de grave a agudo)
+    const parte = h => {
+      const ns = rem.filter(n => n.hand === h).sort((a, b) => a.midi - b.midi);
+      if (!ns.length) return '';
+      const lista = ns.map(n => `<b>${nm(n.midi)}</b>${n.finger ? ` (${n.finger})` : ''}`).join(' + ');
+      return `${hands.size > 1 ? (h === 'L' ? 'Izquierda ' : 'derecha ') : ''}${lista}`;
+    };
+    const txt = [parte('L'), parte('R')].filter(Boolean).join(', ');
+    el.innerHTML = `Tocá juntas: ${txt}${hands.size === 1 ? handTxt : ''}`;
   }
 
   function directionText(wrong, target) {
@@ -2051,9 +2059,10 @@
         const showName = label === 'note' || label === 'both' || (label === 'finger' && !n.finger);
         let cursor = bottom - 3;
         ctx.globalAlpha = Math.max(alpha, 0.85);
-        if (showFinger && visibleH >= 16) {
+        if (showFinger) {
           const r = Math.min(9, w / 2 - 1);
-          const cy = cursor - r;
+          // si la barrita es muy corta, el círculo se apoya justo encima
+          const cy = visibleH >= 2 * r + 4 ? cursor - r : Math.max(r + 1, y - r - 2);
           ctx.fillStyle = 'rgba(255,255,255,0.95)';
           ctx.beginPath();
           ctx.arc(x + w / 2, cy, r, 0, Math.PI * 2);
@@ -2270,8 +2279,8 @@
   // Ayudas efectivas: las del ajuste, pero más reducidas si el paso del plan lo pide
   function barLabelEff() {
     const base = settings.barLabel;
-    if (S.hintOverride === 'none') return 'none';
-    if (S.hintOverride === 'finger') return base === 'both' || base === 'finger' ? 'finger' : 'none';
+    // La digitación no se quita nunca (es lo que evita malos hábitos); lo que se va apagando son los nombres
+    if (S.hintOverride) return base === 'both' || base === 'finger' ? 'finger' : 'none';
     return base;
   }
   function keyLabelsEff() {
