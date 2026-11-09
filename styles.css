@@ -1371,3 +1371,4 @@ body.dropping .drop-hint { display: flex; }
 @media (max-width: 700px) {
   .hand-badge { left: 8px; transform: none; white-space: normal; max-width: 52%; font-size: 0.72rem; }
 }
+.cross-tip { color: #e5a487; font-weight: 700; }

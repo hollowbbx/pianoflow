@@ -326,7 +326,7 @@
   const LH_STD = [5, 4, 3, 2, 1, 3, 2, 1];
   const TECHNIQUE = [
     scaleSong('tec_do', 'Escala de Do mayor', ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'], RH_STD, LH_STD,
-      'Solo teclas blancas. Derecha: el pulgar pasa por abajo después del 3. Izquierda: el 3 cruza por arriba del pulgar.',
+      'Solo teclas blancas. Con las dos manos los dedos no coinciden: las manos son un espejo. Derecha: el pulgar pasa por abajo entre Mi y Fa. Izquierda: entre Sol y La.',
       'Muñeca quieta y a la altura del teclado; que el pulgar se deslice sin que el codo salte. Todas las notas con el mismo volumen.'),
     scaleSong('tec_sol', 'Escala de Sol mayor', ['G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F#5', 'G5'], RH_STD, LH_STD,
       'Un sostenido: Fa♯. Misma digitación que Do.',

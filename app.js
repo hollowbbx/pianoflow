@@ -253,6 +253,7 @@
         hitAt: 0
       }))
       .sort((a, b) => a.time - b.time || a.midi - b.midi);
+    markCrossings(notes, spq);
     let end = 0;
     let minMidi = 127;
     let maxMidi = 0;
@@ -273,6 +274,33 @@
       numBars: Math.max(1, Math.ceil((end - pickupSec) / barSec - 1e-6))
     };
   }
+
+  // Cruces de dedos: en la derecha, subir con un dedo más bajo (o bajar con uno más alto) es un cruce;
+  // en la izquierda es al revés, porque la mano es un espejo. Solo entre notas sueltas (no acordes).
+  function markCrossings(notes, spq = 0.6) {
+    for (const hand of ['R', 'L']) {
+      const hs = notes.filter(n => n.hand === hand);
+      let prev = null;
+      for (let i = 0; i < hs.length; i++) {
+        const n = hs[i];
+        const chord = (hs[i - 1] && Math.abs(hs[i - 1].time - n.time) < 0.03) || (hs[i + 1] && Math.abs(hs[i + 1].time - n.time) < 0.03);
+        if (chord || !n.finger) {
+          prev = null;
+          continue;
+        }
+        // solo pasos cortos (hasta 2 tonos): en un salto más grande la mano se traslada, no cruza
+        // y seguidas en el tiempo (hasta un tiempo y medio): si hay más espera, la mano se reacomoda tranquila
+        if (prev && prev.finger && n.midi !== prev.midi && Math.abs(n.midi - prev.midi) <= 4 && n.time - prev.time <= spq * 1.5 + 1e-3 && n.finger !== prev.finger) {
+          const up = n.midi > prev.midi;
+          const fingerUp = n.finger > prev.finger;
+          const cross = hand === 'R' ? up !== fingerUp : up === fingerUp;
+          if (cross) n.cross = n.finger === 1 ? 'thumb' : prev.finger === 1 ? 'over' : null;
+        }
+        prev = n;
+      }
+    }
+  }
+  const crossText = n => (n.cross === 'thumb' ? 'pasá el pulgar por abajo' : n.cross === 'over' ? `el ${n.finger} cruza por arriba del pulgar` : '');
 
   const barStart = b => (b <= 0 ? 0 : S.song.pickupSec + (b - 1) * S.song.barSec);
   function barAt(t) {
@@ -1638,14 +1666,15 @@
     const handTxt = hands.size === 1 ? `, ${HAND_NAME[rem[0].hand]}` : ', las dos manos';
     if (rem.length === 1) {
       const f = rem[0].finger ? ` con el dedo <b>${rem[0].finger}</b>` : '';
-      el.innerHTML = `Tocá <b>${nm(rem[0].midi)}</b>${f}${handTxt}`;
+      const cx = rem[0].cross ? `. <span class="cross-tip">↻ ${crossText(rem[0])}</span>` : '';
+      el.innerHTML = `Tocá <b>${nm(rem[0].midi)}</b>${f}${handTxt}${cx}`;
       return;
     }
     // Varias notas: cada una con su dedo, la izquierda primero (como se lee de grave a agudo)
     const parte = h => {
       const ns = rem.filter(n => n.hand === h).sort((a, b) => a.midi - b.midi);
       if (!ns.length) return '';
-      const lista = ns.map(n => `<b>${nm(n.midi)}</b>${n.finger ? ` (${n.finger})` : ''}`).join(' + ');
+      const lista = ns.map(n => `<b>${nm(n.midi)}</b>${n.finger ? ` (${n.finger}${n.cross ? `, <span class="cross-tip">${crossText(n)}</span>` : ''})` : ''}`).join(' + ');
       return `${hands.size > 1 ? (h === 'L' ? 'Izquierda ' : 'derecha ') : ''}${lista}`;
     };
     const txt = [parte('L'), parte('R')].filter(Boolean).join(', ');
@@ -2073,6 +2102,13 @@
           ctx.textBaseline = 'middle';
           ctx.fillText(String(n.finger), x + w / 2, cy + 0.5);
           cursor = cy - r - 2;
+          if (n.cross && yTop > 14) {
+            ctx.fillStyle = '#e5a487';
+            ctx.font = `700 9px "Atkinson Hyperlegible", system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(n.cross === 'thumb' ? 'pulgar abajo' : 'cruza arriba', x + w / 2, Math.max(11, yTop - 3));
+          }
         }
         if (showName && cursor - Math.max(y, 0) >= 11) {
           const txt = MT.shortName(n.midi, settings.noteNames === 'both' ? 'es' : settings.noteNames);
