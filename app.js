@@ -358,7 +358,8 @@
         const handTxt = h === 'both' ? (song.hasBothHands ? 'manos juntas' : '') : HAND_NAME[h];
         const label = [partTxt, handTxt].filter(Boolean).join(', ') || 'Aprender las notas';
         const bars = p ? `compases ${Math.max(1, p[0])}–${p[1]}` : 'toda la canción';
-        steps.push({ id: `learn-${p ? p.join('_') : 'all'}-${h}`, mode: 'learn', hand: h, speed: 1, part: p, minAcc: STEP_LEARN_ACC, icon: '', label, sub: `${bars}; las notas te esperan` });
+        const subTxt = h === 'both' ? `${bars}; las notas te esperan` : `${bars}; la ${HAND_NAME[h === 'R' ? 'L' : 'R']} la toca la PC`;
+        steps.push({ id: `learn-${p ? p.join('_') : 'all'}-${h}`, mode: 'learn', hand: h, speed: 1, part: p, minAcc: STEP_LEARN_ACC, icon: '', label, sub: subTxt });
       }
     });
     // Las ayudas se van apagando: al 80% sin nombres de notas, al 100% sin ayudas
@@ -589,7 +590,7 @@
   function newRun(fromStart) {
     return {
       fromStart, hits: 0, errors: 0, perfect: 0, good: 0, ok: 0, missed: 0, extras: 0, combo: 0, maxCombo: 0, barErr: {}, started: performance.now(),
-      fb: { off: { R: [], L: [] }, vel: { R: [], L: [] }, held: [], waits: [], waitBar: {} } // para los comentarios del profe
+      fb: { off: { R: [], L: [] }, vel: { R: [], L: [] }, miss: { R: 0, L: 0 }, held: [], waits: [], waitBar: {} } // para los comentarios del profe
     };
   }
   const newLap = () => ({ hits: 0, errors: 0, missed: 0, extras: 0 });
@@ -770,6 +771,8 @@
         S.run.missed++;
         S.lap.missed++;
         S.idleMisses = (S.idleMisses || 0) + 1;
+        S.run.fb.miss[n.hand]++;
+        addPopup(n.midi, 'No la tocaste', '#e2a07f', 0.9);
         noteBarError(n.time);
         breakCombo();
       }
@@ -1167,6 +1170,16 @@
     const out = []; // { p: prioridad, icon, text }
     const both = S.song && S.song.hasBothHands;
 
+    if (mode === 'rhythm' && both && fb.miss) {
+      for (const h of ['L', 'R']) {
+        const total = S.song.notes.filter(n => n.hand === h && isUserNote(n)).length;
+        const other = h === 'L' ? 'R' : 'L';
+        const totalO = S.song.notes.filter(n => n.hand === other && isUserNote(n)).length;
+        if (total >= 6 && fb.miss[h] / total >= 0.3 && fb.miss[other] / Math.max(1, totalO) < 0.15) {
+          out.push({ p: 10, icon: '', text: `Te faltaron muchas notas de la <b>${HAND_NAME[h]}</b> (${fb.miss[h]} de ${total}). Con ritmo la canción no espera: practicá esa mano sola en Aprender y después juntalas despacio.` });
+        }
+      }
+    }
     if (mode === 'rhythm') {
       const offs = fb.off.R.concat(fb.off.L);
       if (offs.length >= 8) {
@@ -1498,10 +1511,23 @@
       b.disabled = !!S.song && h !== 'both' && !S.song.hands.has(h);
     });
     ui.btnMetronome.classList.toggle('active', S.metronome);
+    updateHandBadge();
     setSpeed(S.speed);
     updateLoopUI();
     updatePlayButton();
     updateCenterMessage();
+  }
+
+  function updateHandBadge() {
+    const el = $('handBadge');
+    const show = S.song && S.song.hasBothHands && S.hand !== 'both' && S.mode !== 'listen' && !S.freeEmpty;
+    el.classList.toggle('visible', !!show);
+    if (show) {
+      const other = S.hand === 'R' ? 'L' : 'R';
+      const muted = settings.otherHand === 'mute';
+      el.innerHTML = `Practicás la <b>${HAND_NAME[S.hand]}</b>. ${muted ? `La ${HAND_NAME[other]} no se toca (en silencio).` : `La ${HAND_NAME[other]} la toca la PC.`}`;
+      el.classList.toggle('left', S.hand === 'L');
+    }
   }
 
   function updatePlayButton() {
@@ -1550,7 +1576,11 @@
     ui.loopInfo.classList.toggle('visible', S.loop.on);
     ui.loopAutoSpeed.checked = !!settings.loopAutoSpeed;
     if (S.loop.on) {
-      ui.loopText.textContent = `Compases ${S.loop.startBar}–${S.loop.endBar}: ${S.loop.clean} de ${loopGoal()} vueltas sin errores`;
+      const st = S.activeStep != null && S.song && !S.free ? lessonPlan(S.song)[S.activeStep] : null;
+      const esPaso = st && st.part && S.loop.startBar === st.part[0] && S.loop.endBar === st.part[1] && !stepIsDone(S.song.id, st);
+      ui.loopText.textContent = esPaso
+        ? `Compases ${S.loop.startBar}–${S.loop.endBar}: una vuelta con ${pct(st.minAcc)} cumple el paso`
+        : `Compases ${S.loop.startBar}–${S.loop.endBar}: ${S.loop.clean} de ${loopGoal()} vueltas sin errores`;
     }
     updateTimeline();
   }

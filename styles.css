@@ -1346,3 +1346,28 @@ body.dropping .drop-hint { display: flex; }
 @media (max-width: 700px) {
   .muse-form { flex-direction: column; }
 }
+
+/* Qué mano practicás (la otra la toca la PC) */
+.hand-badge {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  display: none;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: rgba(22, 20, 18, 0.9);
+  border: 1px solid var(--rh);
+  border-left-width: 3px;
+  border-radius: var(--r-sm);
+  padding: 5px 10px;
+  pointer-events: none;
+  z-index: 3;
+}
+.hand-badge.left { border-color: var(--lh); }
+.hand-badge.visible { display: block; }
+@media (max-width: 1150px) {
+  .hand-badge { bottom: auto; top: 8px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+}
+@media (max-width: 700px) {
+  .hand-badge { left: 8px; transform: none; white-space: normal; max-width: 52%; font-size: 0.72rem; }
+}

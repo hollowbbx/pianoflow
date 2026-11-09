@@ -1,7 +1,7 @@
 // PianoFlow · Service worker: hace que la app abra y funcione sin internet (y sin el servidor local).
 // - Archivos de la app: primero la red (para recibir actualizaciones); si no hay, la copia guardada.
 // - Sonidos del piano real: se guardan la primera vez y después salen de la copia.
-const APP_CACHE = 'pianoflow-app-v8';
+const APP_CACHE = 'pianoflow-app-v9';
 const SOUND_CACHE = 'pianoflow-sounds-v1';
 const APP_FILES = [
   './',
