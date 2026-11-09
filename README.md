@@ -65,6 +65,12 @@ y el último paso es **🎼 tocarla leyendo la partitura**, sin notas que caen.
 
 Podés hacer clic en cualquier número para ir a ese paso, o usar los controles a mano cuando quieras.
 
+### 🎹 Nivel 4 de la ruta: Acordes y progresiones
+Siete lecciones que se aprenden con el mismo plan de pasos y con digitación: **Mayor y menor**, **Inversiones de Do**,
+**I–IV–V–I sin saltar**, **I–V–vi–IV con inversiones**, **Mano izquierda en arpegio**, **Blues de 12 compases** y
+**ii–V–I con séptimas**. Todas usan las posiciones que menos mueven la mano, y el cartel dice qué acorde suena
+(por ejemplo "Es G (Sol mayor); tu mano, en 1.ª inversión").
+
 ### 🎸 Acordes y progresiones (sin partitura)
 Para tocar canciones con cifrado (C, Am, F, G…) como en los cancioneros y sitios de acordes.
 Se abre desde Inicio (calentamiento) o en ⚙️ → *Acordes y progresiones*. Tiene 3 modos:
@@ -216,7 +222,7 @@ también necesitás leer partitura, técnica sin tensión y tocar sin ayudas: el
 |---|---|---|
 | 1–2 | Ubicarte en el teclado, 5 dedos, manos juntas en cosas simples | Lecciones 1–6 hasta ★★. Lectura de notas niveles 1–2. Meta diaria de 10–15 min. |
 | 3–4 | Paso del pulgar, compás de 3, acordes básicos | Lecciones 7–9. Lectura niveles 3–4. Escalas de Do y Sol todos los días (2 min). Cambiá "En las notas que caen" a **Dedo** (sin nombres). |
-| 5–6 | Primeras obras reales | Lecciones 10–12 + MIDIs simples que te gusten. Lectura niveles 5–6. Usá mucho *Repetir tramo*. Empezá a mirar el pentagrama de ayuda. |
+| 5–6 | Acordes, progresiones y primeras obras | Lecciones 10–16 (acordes, inversiones, I–IV–V, pop, arpegio, blues, ii–V–I) y 17–19 (clásicos) + MIDIs simples que te gusten. Lectura niveles 5–6. Usá mucho *Repetir tramo*. Empezá a mirar el pentagrama de ayuda. |
 | 7–9 | Leer partitura simple y acompañar con acordes | Pasá "En las notas que caen" a **Nada** y apoyate en el pentagrama. Sumá un libro de método para adultos. |
 | 10–12 | Repertorio propio de 5–10 piezas | Tocá cada pieza **sin la app** desde la partitura o de memoria; grabate con ● Grabar y escuchate. |
 
@@ -245,7 +251,7 @@ Las fuentes se descargan la primera vez y quedan guardadas para usar sin interne
 - `audio.js` — piano real (muestras Salamander Grand Piano) + sintetizador de respaldo + salida MIDI al teclado.
 - `midi-parser.js` — lector/exportador de archivos `.mid` y detector de acordes.
 - `musicxml.js` — lector de MusicXML (.musicxml y .mxl comprimido), con manos, ligaduras, anacrusa, tempo y digitación.
-- `songs.js` — las 12 lecciones, escritas en una notación compacta y validada compás por compás.
+- `songs.js` — las 19 lecciones (5 niveles, uno de acordes y progresiones) y las 6 escalas, escritas en una notación compacta y validada compás por compás.
 - `PianoFlow.vbs` — abre la app en su ventana (lo usa el ícono del escritorio). `iniciar_piano.bat` hace lo mismo.
 - `servidor.py` — servidor local invisible en `localhost:8085`.
 - `manifest.webmanifest`, `sw.js`, `icons/` — lo que la hace instalable y le permite funcionar sin internet.

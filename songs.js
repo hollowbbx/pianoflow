@@ -152,7 +152,8 @@
     { id: 1, name: 'Nivel 1 · Primeros pasos', blurb: 'Ubicar las manos y usar cada dedo.' },
     { id: 2, name: 'Nivel 2 · Melodías y manos juntas', blurb: 'Tus primeras canciones con las dos manos.' },
     { id: 3, name: 'Nivel 3 · Técnica y ritmo', blurb: 'Paso del pulgar, compás de 3 y acordes.' },
-    { id: 4, name: 'Nivel 4 · Clásicos', blurb: 'Obras reales en versión accesible.' }
+    { id: 'ac', name: 'Nivel 4 · Acordes y progresiones', blurb: 'Inversiones, progresiones y acompañamientos: lo que necesitás para tocar canciones con cifrado.' },
+    { id: 4, name: 'Nivel 5 · Clásicos', blurb: 'Obras reales en versión accesible.' }
   ];
 
   const BUILTIN_SONGS = [
@@ -262,9 +263,102 @@
         ['L', 0, 'A2/4/1 | F2/4/1 | C3/4/1 | G2/4/1 | A2/2/1 A2/2/1 | F2/2/1 F2/2/1 | C3/2/1 C3/2/1 | G2/2/1 G2/2/1 | C3/4/1']
       ]
     ),
+    // -----------------------------------------------------------------------
+    // Nivel 4 · Acordes y progresiones (para tocar canciones con cifrado)
+    // Todas usan las posiciones que menos mueven la mano (inversiones).
+    // -----------------------------------------------------------------------
     makeSong(
       {
-        id: 'l4_preludio_bach', level: 4, title: 'Preludio en Do (versión inicial)', artist: 'J. S. Bach · Lección 10 · Hipnótico',
+        id: 'ac_mayor_menor', level: 'ac', title: 'Mayor y menor', artist: 'Lección 10 · Acordes',
+        concept: 'Mayor vs. menor: la nota del medio baja una tecla (medio tono) y el acorde pasa de alegre a triste.',
+        tip: 'Pulgar y meñique quedan quietos; solo se mueve el 3. Escuchá cómo cambia el color: Do → Do menor, Fa → Fa menor, Sol → Sol menor.',
+        bpm: 70
+      },
+      [
+        ['R', 0, 'C4+E4+G4/4/1+3+5 | C4+Eb4+G4/4/1+3+5 | F4+A4+C5/4/1+3+5 | F4+Ab4+C5/4/1+3+5 | G4+B4+D5/4/1+3+5 | G4+Bb4+D5/4/1+3+5 | C4+E4+G4/4/1+3+5 | C4+E4+G4/4/1+3+5'],
+        ['L', 0, 'C3/4/5 | C3/4/5 | F2/4/5 | F2/4/5 | G2/4/5 | G2/4/5 | C3/4/5 | C3/4/5']
+      ]
+    ),
+    makeSong(
+      {
+        id: 'ac_inversiones', level: 'ac', title: 'Inversiones de Do', artist: 'Lección 11 · Acordes',
+        concept: 'Inversiones: el mismo acorde con otra nota abajo. Do-Mi-Sol, Mi-Sol-Do y Sol-Do-Mi siguen siendo Do mayor.',
+        tip: 'La 1.ª inversión (Mi abajo) se toca 1-2-5; las otras, 1-3-5. La forma de la mano cambia, pero suena "Do" siempre. Sirven para no saltar entre acordes.',
+        bpm: 66
+      },
+      [
+        ['R', 0, 'C4+E4+G4/4/1+3+5 | E4+G4+C5/4/1+2+5 | G4+C5+E5/4/1+3+5 | C5+E5+G5/4/1+3+5 | G4+C5+E5/4/1+3+5 | E4+G4+C5/4/1+2+5 | C4+E4+G4/4/1+3+5 | C4+E4+G4/4/1+3+5'],
+        ['L', 0, 'C3/4/5 | C3/4/5 | C3/4/5 | C3/4/5 | C3/4/5 | C3/4/5 | C3/4/5 | C3/4/5']
+      ]
+    ),
+    makeSong(
+      {
+        id: 'ac_i_iv_v', level: 'ac', title: 'I–IV–V–I sin saltar', artist: 'Lección 12 · Progresión',
+        concept: 'I–IV–V–I (Do, Fa, Sol, Do): la progresión base de miles de canciones, con inversiones para que la mano casi no se mueva.',
+        tip: 'Do queda fijo con el pulgar entre Do y Fa/Do; para Sol/Si el pulgar baja una tecla. Pensá en las notas en común, no en saltar. En la 2.ª vuelta la izquierda toca raíz y quinta.',
+        bpm: 72
+      },
+      [
+        ['R', 0, 'C4+E4+G4/4/1+3+5 | C4+F4+A4/4/1+3+5 | B3+D4+G4/4/1+2+5 | C4+E4+G4/4/1+3+5 | C4+E4+G4/4/1+3+5 | C4+F4+A4/4/1+3+5 | B3+D4+G4/4/1+2+5 | C4+E4+G4/4/1+3+5'],
+        ['L', 0, 'C3/4/5 | F2/4/5 | G2/4/5 | C3/4/5 | C3/2/5 G3/2/1 | F2/2/5 C3/2/1 | G2/2/5 D3/2/1 | C3/4/5']
+      ]
+    ),
+    makeSong(
+      {
+        id: 'ac_pop', level: 'ac', title: 'I–V–vi–IV con inversiones', artist: 'Lección 13 · Progresión pop',
+        concept: 'Do, Sol, La menor y Fa: la progresión más usada del pop, en la forma que menos mueve la mano.',
+        tip: 'Primera vuelta con acordes largos; en la segunda, 4 golpes por compás como una balada. Cambiá justo en el "1" sin cortar el sonido.',
+        bpm: 76
+      },
+      [
+        ['R', 0, 'C4+E4+G4/4/1+3+5 | B3+D4+G4/4/1+2+5 | C4+E4+A4/4/1+2+5 | C4+F4+A4/4/1+3+5 | ' +
+          'C4+E4+G4/1/1+3+5 C4+E4+G4/1/1+3+5 C4+E4+G4/1/1+3+5 C4+E4+G4/1/1+3+5 | B3+D4+G4/1/1+2+5 B3+D4+G4/1/1+2+5 B3+D4+G4/1/1+2+5 B3+D4+G4/1/1+2+5 | ' +
+          'C4+E4+A4/1/1+2+5 C4+E4+A4/1/1+2+5 C4+E4+A4/1/1+2+5 C4+E4+A4/1/1+2+5 | C4+F4+A4/1/1+3+5 C4+F4+A4/1/1+3+5 C4+F4+A4/1/1+3+5 C4+F4+A4/1/1+3+5 | C4+E4+G4/4/1+3+5'],
+        ['L', 0, 'C3/4/5 | G2/4/5 | A2/4/5 | F2/4/5 | C3/4/5 | G2/4/5 | A2/4/5 | F2/4/5 | C3+G3/4/5+1']
+      ]
+    ),
+    makeSong(
+      {
+        id: 'ac_arpegio', level: 'ac', title: 'Mano izquierda en arpegio', artist: 'Lección 14 · Acompañamiento',
+        concept: 'Acompañar con la izquierda en arpegio (raíz, quinta, octava, quinta): suena a canción, no a ejercicio.',
+        tip: 'La izquierda repite la misma forma 5-2-1-2 en cada acorde y solo se traslada. Practicala sola hasta que salga sin mirar; la derecha mantiene los acordes de la lección anterior.',
+        bpm: 72
+      },
+      [
+        ['R', 0, 'C4+E4+G4/4/1+3+5 | C4+F4+A4/4/1+3+5 | B3+D4+G4/4/1+2+5 | C4+E4+G4/4/1+3+5 | C4+E4+G4/4/1+3+5 | C4+F4+A4/4/1+3+5 | B3+D4+G4/4/1+2+5 | C4+E4+G4/4/1+3+5'],
+        ['L', 0, 'C3/1/5 G3/1/2 C4/1/1 G3/1/2 | F2/1/5 C3/1/2 F3/1/1 C3/1/2 | G2/1/5 D3/1/2 G3/1/1 D3/1/2 | C3/1/5 G3/1/2 C4/1/1 G3/1/2 | ' +
+          'C3/1/5 G3/1/2 C4/1/1 G3/1/2 | F2/1/5 C3/1/2 F3/1/1 C3/1/2 | G2/1/5 D3/1/2 G3/1/1 D3/1/2 | C3/1/5 G3/1/2 C4/2/1']
+      ]
+    ),
+    makeSong(
+      {
+        id: 'ac_blues', level: 'ac', title: 'Blues de 12 compases', artist: 'Lección 15 · Blues',
+        concept: 'La forma del blues: Do7 cuatro compases, Fa7 dos, Do7 dos, y después Sol7, Fa7, Do7, Sol7. La izquierda hace el "boogie".',
+        tip: 'La derecha toca solo dos notas por acorde (la 3.ª y la 7.ª, las que dan el color del blues): de un acorde al otro se mueven medio tono. La izquierda: 5-2-1-2 en cada compás.',
+        bpm: 84
+      },
+      [
+        ['R', 0, 'E4+Bb4/4/1+4 | E4+Bb4/4/1+4 | E4+Bb4/4/1+4 | E4+Bb4/4/1+4 | Eb4+A4/4/1+4 | Eb4+A4/4/1+4 | E4+Bb4/4/1+4 | E4+Bb4/4/1+4 | F4+B4/4/1+4 | Eb4+A4/4/1+4 | E4+Bb4/4/1+4 | F4+B4/4/1+4 | E4+Bb4/4/1+4'],
+        ['L', 0, 'C3/1/5 G3/1/2 A3/1/1 G3/1/2 | C3/1/5 G3/1/2 A3/1/1 G3/1/2 | C3/1/5 G3/1/2 A3/1/1 G3/1/2 | C3/1/5 G3/1/2 A3/1/1 G3/1/2 | ' +
+          'F2/1/5 C3/1/2 D3/1/1 C3/1/2 | F2/1/5 C3/1/2 D3/1/1 C3/1/2 | C3/1/5 G3/1/2 A3/1/1 G3/1/2 | C3/1/5 G3/1/2 A3/1/1 G3/1/2 | ' +
+          'G2/1/5 D3/1/2 E3/1/1 D3/1/2 | F2/1/5 C3/1/2 D3/1/1 C3/1/2 | C3/1/5 G3/1/2 A3/1/1 G3/1/2 | G2/1/5 D3/1/2 E3/1/1 D3/1/2 | C3+G3/4/5+1']
+      ]
+    ),
+    makeSong(
+      {
+        id: 'ac_jazz', level: 'ac', title: 'ii–V–I con séptimas', artist: 'Lección 16 · Jazz y bossa',
+        concept: 'Re menor 7, Sol 7 y Do maj7: la progresión del jazz y la bossa nova. Con séptimas el sonido se vuelve suave y "de bar".',
+        tip: 'Casi todo queda quieto: Fa-La-Do → Fa-Sol-Si → Mi-Sol-Si. Movés uno o dos dedos por vez. Escuchá cómo el Sol 7 "pide" resolver en Do maj7.',
+        bpm: 66
+      },
+      [
+        ['R', 0, 'F4+A4+C5/4/1+3+5 | F4+G4+B4/4/1+2+4 | E4+G4+B4/4/1+2+4 | E4+G4+B4/4/1+2+4 | F4+A4+C5/4/1+3+5 | F4+G4+B4/4/1+2+4 | E4+G4+B4/4/1+2+4 | E4+G4+B4/4/1+2+4'],
+        ['L', 0, 'D3/4/5 | G2/4/5 | C3/4/5 | C3/4/5 | D3/4/5 | G2/4/5 | C3/4/5 | C3/4/5']
+      ]
+    ),
+    makeSong(
+      {
+        id: 'l4_preludio_bach', level: 4, title: 'Preludio en Do (versión inicial)', artist: 'J. S. Bach · Lección 17 · Hipnótico',
         concept: 'Arpegios que se repiten: ideal para entrar en "flow".',
         tip: 'Cada compás es el mismo dibujo dos veces: 2 notas con la izquierda y 3 notas que se repiten con la derecha. Aprendé la forma de la mano en cada compás.',
         bpm: 56
@@ -274,7 +368,7 @@
     ),
     makeSong(
       {
-        id: 'l4_canon', level: 4, title: 'Canon (versión en Do)', artist: 'Pachelbel · Lección 11',
+        id: 'l4_canon', level: 4, title: 'Canon (versión en Do)', artist: 'Pachelbel · Lección 18',
         concept: 'Bajo que se repite + melodía que baja por grados.',
         tip: 'El bajo repite siempre las mismas 8 notas. Aprendelo de memoria con "Solo izquierda" y después sumá la melodía.',
         bpm: 66
@@ -287,7 +381,7 @@
     ),
     makeSong(
       {
-        id: 'l4_para_elisa', level: 4, title: 'Para Elisa (tema principal)', artist: 'Beethoven · Lección 12',
+        id: 'l4_para_elisa', level: 4, title: 'Para Elisa (tema principal)', artist: 'Beethoven · Lección 19',
         concept: 'Tecla negra (Re#), compás de 3/8 y manos que se turnan.',
         tip: 'Re# es la tecla negra entre Re y Mi. Las manos casi nunca tocan a la vez: se pasan la melodía. Empezá al 50% de velocidad.',
         bpm: 50, timeSig: [3, 8], pickup: 0.5

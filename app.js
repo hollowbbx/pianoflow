@@ -1678,7 +1678,20 @@
       return `${hands.size > 1 ? (h === 'L' ? 'Izquierda ' : 'derecha ') : ''}${lista}`;
     };
     const txt = [parte('L'), parte('R')].filter(Boolean).join(', ');
-    el.innerHTML = `Tocá juntas: ${txt}${hands.size === 1 ? handTxt : ''}`;
+    // El acorde que suena entre las dos manos (como en un cifrado) y en qué inversión está tu mano
+    let acorde = '';
+    const sonando = S.song.notes.filter(n => Math.abs(n.time - S.waitTime) <= CHORD_EPS).map(n => n.midi);
+    const c = sonando.length >= 3 ? chordOf(sonando) : null;
+    if (c) {
+      acorde = `. Es <span class="chord-tip">${escapeHtml(chordSym(c))} (${escapeHtml(chordEs(c))})</span>`;
+      const mano = rem.filter(n => n.hand === 'R').length >= 3 ? rem.filter(n => n.hand === 'R') : rem.filter(n => n.hand === rem[0].hand);
+      if (mano.length >= 3) {
+        const low = MT.pc(Math.min(...mano.map(n => n.midi)));
+        const pos = chordPcs(c).indexOf(low);
+        if (pos > 0) acorde += `; tu mano, en ${['', '1.ª', '2.ª', '3.ª'][pos]} inversión`;
+      }
+    }
+    el.innerHTML = `Tocá juntas: ${txt}${hands.size === 1 ? handTxt : ''}${acorde}`;
   }
 
   function directionText(wrong, target) {
@@ -3254,20 +3267,32 @@
     renderChords();
   }
 
-  // Nombre del acorde que está sonando: "Cm (Do menor)"; si no es un acorde conocido, las notas
-  function identifyChord(held) {
-    const pcs = [...new Set(held.map(m => MT.pc(m)))];
-    for (const root of pcs) {
-      const rel = pcs.map(p => (p - root + 12) % 12).sort((a, b) => a - b);
-      for (const [type, def] of Object.entries(CHORD_TYPES)) {
-        if (def.iv.length === rel.length && def.iv.every((v, i) => v === rel[i])) {
-          const bass = MT.pc(held[0]) !== root ? MT.pc(held[0]) : null;
-          const c = { root, type, bass };
-          return `${chordSym(c)} (${chordEs(c)})`;
+  // Séptimas "sin quinta" (como se tocan en jazz y blues): se reconocen como la séptima completa
+  const SHELL_TYPES = { 7: [0, 4, 10], m7: [0, 3, 10], maj7: [0, 4, 11] };
+
+  // Acorde que forman estas notas: { root, type, bass } o null
+  function chordOf(held) {
+    const sorted = [...held].sort((a, b) => a - b);
+    const pcs = [...new Set(sorted.map(m => MT.pc(m)))];
+    const match = iv => {
+      for (const root of pcs) {
+        const rel = pcs.map(p => (p - root + 12) % 12).sort((a, b) => a - b);
+        for (const [type, ivs] of iv) {
+          if (ivs.length === rel.length && ivs.every((v, i) => v === rel[i])) {
+            return { root, type, bass: MT.pc(sorted[0]) !== root ? MT.pc(sorted[0]) : null };
+          }
         }
       }
-    }
-    return pcs.map(pcName).join(' + ');
+      return null;
+    };
+    return match(Object.entries(CHORD_TYPES).map(([t, d]) => [t, d.iv])) || match(Object.entries(SHELL_TYPES));
+  }
+
+  // Nombre del acorde que está sonando: "Cm (Do menor)"; si no es un acorde conocido, las notas
+  function identifyChord(held) {
+    const c = chordOf(held);
+    if (c) return `${chordSym(c)} (${chordEs(c)})`;
+    return [...new Set(held.map(m => MT.pc(m)))].map(pcName).join(' + ');
   }
 
   function heldNotes() {
